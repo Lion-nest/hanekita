@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>期待値計算ツール</title>
+    <title>期待値計算ツール V2.0</title>
     <style>
-        /* ダークモード＆コンパクト設定 */
+        /* デザイン：目に優しい濃いグレーのダークモード、コンパクトな2列表示 */
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
-            background-color: #121212; /* 濃いグレー背景 */
-            color: #e0e0e0; /* 薄いグレー文字 */
+            background-color: #121212;
+            color: #e0e0e0;
             margin: 0;
             padding: 10px;
-            font-size: 14px; /* 全体的に少し小さく */
+            font-size: 14px;
         }
         .container {
             background: #1e1e1e;
@@ -23,7 +23,7 @@
         }
         h2 { margin: 0 0 10px 0; font-size: 1.1rem; color: #fff; border-bottom: 1px solid #333; padding-bottom: 5px; }
         
-        /* 2列レイアウト */
+        /* 2列レイアウト設定 */
         .input-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -31,25 +31,22 @@
             margin-bottom: 10px;
         }
         .input-group { display: flex; flex-direction: column; }
-        
-        /* ラベルとボタンを横並びにして高さを節約 */
         .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
         label { font-weight: bold; font-size: 0.75rem; color: #aaa; }
         
-        /* 入力欄のダークデザイン */
+        /* 入力欄：スマホでタップした時に全選択されるように設定 */
         input[type="number"], input[type="text"] {
             width: 100%;
             padding: 8px;
             border: 1px solid #444;
             border-radius: 6px;
-            font-size: 16px; /* iOSでズームされない最低サイズ */
+            font-size: 16px;
             box-sizing: border-box;
             background-color: #2c2c2e;
             color: #fff;
         }
         input:focus { outline: none; border-color: #0a84ff; background-color: #3a3a3c; }
         
-        /* ボタン類 */
         button {
             background-color: #0a84ff; color: white; border: none;
             padding: 10px; border-radius: 6px; font-size: 14px;
@@ -60,21 +57,30 @@
         button.btn-cancel { background-color: #48484a; margin-top: 10px; }
         button:disabled { background-color: #444; color: #888; }
 
-        /* 結果表示エリア（ダークモード） */
+        /* 計算結果表示エリア */
         .result-area {
             margin-top: 10px; padding: 10px;
             background-color: #1c2533; border-radius: 8px; border: 1px solid #2a3b55;
         }
         .result-item {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 6px; border-bottom: 1px dashed #334; padding-bottom: 4px;
+            display: flex; flex-direction: column;
+            margin-bottom: 8px; border-bottom: 1px dashed #334; padding-bottom: 6px;
         }
         .result-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .result-header { display: flex; justify-content: space-between; align-items: center; }
         .result-label { font-size: 0.8rem; color: #ccc; }
         .result-value { font-weight: bold; color: #fff; font-size: 1rem; }
+        
+        /* 極小フォントの計算式表示 */
+        .formula-text { 
+            font-size: 0.6rem; 
+            color: #58a6ff; 
+            margin-top: 2px;
+            font-family: monospace;
+        }
         .highlight { color: #ff453a; font-size: 1.15rem; }
 
-        /* サブページ用 */
+        /* 確率計算サブページ */
         #calc-page { display: none; }
         .calc-result-box {
             margin: 10px 0; padding: 10px; border-radius: 6px; text-align: center;
@@ -90,18 +96,18 @@
     
     <div class="input-grid">
         <div class="input-group">
-            <div class="label-row"><label>ナキ(1K)</label></div>
+            <div class="label-row"><label>ナキ（1Kあたり）</label></div>
             <input type="number" id="in-naki" inputmode="decimal" onfocus="this.select()" placeholder="例: 12.0">
         </div>
         <div class="input-group">
             <div class="label-row">
-                <label>確率</label>
+                <label>確率分母</label>
                 <button type="button" class="btn-small" onclick="showCalcPage()">自動計算</button>
             </div>
             <input type="number" id="in-prob" inputmode="decimal" onfocus="this.select()" placeholder="例: 22.0">
         </div>
         <div class="input-group">
-            <div class="label-row"><label>RB(出玉=RB×5)</label></div>
+            <div class="label-row"><label>RB (出玉=RB×5)</label></div>
             <input type="number" id="in-rb" inputmode="decimal" onfocus="this.select()" value="110">
         </div>
         <div class="input-group">
@@ -109,71 +115,90 @@
             <input type="number" id="in-speed" inputmode="decimal" onfocus="this.select()" value="120">
         </div>
         <div class="input-group">
-            <div class="label-row"><label>換金率(円/玉)</label></div>
+            <div class="label-row"><label>換金率（円/玉）</label></div>
             <input type="number" id="in-rate" inputmode="decimal" onfocus="this.select()" value="3.57">
         </div>
         <div class="input-group">
-            <div class="label-row"><label>予定時間(h)</label></div>
+            <div class="label-row"><label>稼働時間 (h)</label></div>
             <input type="number" id="in-time" inputmode="decimal" onfocus="this.select()" value="10">
         </div>
     </div>
 
     <div class="result-area">
         <h2 style="font-size: 0.9rem; margin-bottom: 5px;">計算結果</h2>
+        
         <div class="result-item">
-            <span class="result-label">1回当たり必要玉数</span>
-            <span class="result-value" id="out-req-balls">0 玉</span>
-        </div>
-        <div class="result-item">
-            <span class="result-label">当たり増加玉数</span>
-            <span class="result-value" id="out-plus-balls">0 玉</span>
-        </div>
-        <div class="result-item">
-            <span class="result-label">1ナキ増減(単価)</span>
-            <span class="result-value" id="out-tanka">0 玉</span>
-        </div>
-        <div class="result-item">
-            <span class="result-label">1時間期待値</span>
-            <span class="result-value highlight" id="out-1h-yen">0 円</span>
-        </div>
-        <div class="result-item" style="flex-direction: column; align-items: flex-start; margin-top: 5px;">
-            <span class="result-label">予定時間の期待値</span>
-            <div style="width: 100%; text-align: right;">
-                <span class="result-value highlight" id="out-total-balls" style="font-size: 1rem;">0 玉</span><br>
-                <span class="result-value highlight" id="out-total-yen">0 円</span>
+            <div class="result-header">
+                <span class="result-label">1回の当たりに必要な玉数</span>
+                <span class="result-value" id="out-req-balls">0 玉</span>
             </div>
+            <div class="formula-text" id="fml-req-balls"></div>
+        </div>
+
+        <div class="result-item">
+            <div class="result-header">
+                <span class="result-label">当たり増加玉数</span>
+                <span class="result-value" id="out-plus-balls">0 玉</span>
+            </div>
+            <div class="formula-text" id="fml-plus-balls"></div>
+        </div>
+
+        <div class="result-item">
+            <div class="result-header">
+                <span class="result-label">回転単価（1ナキ増減）</span>
+                <span class="result-value" id="out-tanka">0 玉</span>
+            </div>
+            <div class="formula-text" id="fml-tanka"></div>
+        </div>
+
+        <div class="result-item">
+            <div class="result-header">
+                <span class="result-label">1時間期待値</span>
+                <span class="result-value highlight" id="out-1h-yen">0 円</span>
+            </div>
+            <div class="formula-text" id="fml-1h-yen"></div>
+        </div>
+
+        <div class="result-item" style="border-bottom: none;">
+            <div class="result-header">
+                <span class="result-label">稼働時間での期待値</span>
+                <div style="text-align: right;">
+                    <span class="result-value highlight" id="out-total-balls">0 玉</span><br>
+                    <span class="result-value highlight" id="out-total-yen">0 円</span>
+                </div>
+            </div>
+            <div class="formula-text" id="fml-total"></div>
         </div>
     </div>
 </div>
 
 <div id="calc-page" class="container">
     <h2>確率の自動計算</h2>
-    <p style="font-size: 0.75rem; color: #aaa; margin-top: 0;">左下の「 . 」キーで区切って連続入力できます</p>
+    <p style="font-size: 0.75rem; color: #aaa; margin-top: 0;">「 . 」で区切って数字を連続入力してください。</p>
     
     <div class="input-group" style="margin-bottom: 15px;">
-        <label style="margin-bottom: 5px;">総スタート (例: 563.568.511)</label>
+        <label style="margin-bottom: 5px;">総スタートの羅列 (例: 563.568.511)</label>
         <input type="text" id="calc-start" inputmode="decimal" onfocus="this.select()">
     </div>
 
     <div class="input-group" style="margin-bottom: 15px;">
-        <label style="margin-bottom: 5px;">大当り回数 (例: 19.28.9)</label>
+        <label style="margin-bottom: 5px;">大当り回数の羅列 (例: 19.28.9)</label>
         <input type="text" id="calc-hit" inputmode="decimal" onfocus="this.select()">
     </div>
 
     <button type="button" onclick="calculateProb()">計算する</button>
 
     <div class="calc-result-box" id="calc-result-box" style="display: none;">
-        <div style="font-size: 0.8rem; color:#ccc;">合算スタート: <span id="calc-sum-start">0</span> / 合算大当り: <span id="calc-sum-hit">0</span></div>
-        <div style="margin-top: 5px; font-size: 0.8rem;">大当たり確率</div>
-        <div class="calc-result-num" id="calc-final-prob">1 / 0.00</div>
+        <div style="font-size: 0.8rem; color:#ccc;">合計スタート: <span id="calc-sum-start">0</span> / 合計大当り: <span id="calc-sum-hit">0</span></div>
+        <div style="margin-top: 5px; font-size: 0.8rem;">平均大当たり確率分母</div>
+        <div class="calc-result-num" id="calc-final-prob">0.00</div>
     </div>
 
     <button type="button" style="margin-top: 10px; background-color: #ff9f0a; color: #000;" onclick="applyProb()" id="btn-apply" disabled>この確率を反映する</button>
-    <button type="button" class="btn-cancel" onclick="hideCalcPage()">キャンセル</button>
+    <button type="button" class="btn-cancel" onclick="hideCalcPage()">キャンセルして戻る</button>
 </div>
 
 <script>
-    // メイン計算ロジック
     const inputs = document.querySelectorAll('#main-page input');
     inputs.forEach(input => { input.addEventListener('input', updateResults); });
 
@@ -185,10 +210,7 @@
         const rate = parseFloat(document.getElementById('in-rate').value) || 0;
         const time = parseFloat(document.getElementById('in-time').value) || 0;
 
-        if (naki === 0 || prob === 0) {
-            document.querySelectorAll('.result-value').forEach(el => el.innerText = "0");
-            return;
-        }
+        if (naki === 0 || prob === 0) return;
 
         const avgOutput = rb * 5;
         const reqBalls = (prob / naki) * 250;
@@ -198,30 +220,24 @@
         const totalBalls = tanka * speed * time;
         const totalYen = totalBalls * rate;
 
+        // 結果の表示
         document.getElementById('out-req-balls').innerText = reqBalls.toFixed(1) + " 玉";
         document.getElementById('out-plus-balls').innerText = plusBalls.toFixed(1) + " 玉";
         document.getElementById('out-tanka').innerText = tanka.toFixed(2) + " 玉";
         document.getElementById('out-1h-yen').innerText = Math.round(hourlyYen).toLocaleString() + " 円";
         document.getElementById('out-total-balls').innerText = Math.round(totalBalls).toLocaleString() + " 玉";
         document.getElementById('out-total-yen').innerText = Math.round(totalYen).toLocaleString() + " 円";
-    }
 
-    // サブページ（確率計算）ロジック
-    let calculatedProb = 0;
-
-    function showCalcPage() {
-        document.getElementById('main-page').style.display = 'none';
-        document.getElementById('calc-page').style.display = 'block';
-    }
-
-    function hideCalcPage() {
-        document.getElementById('calc-page').style.display = 'none';
-        document.getElementById('main-page').style.display = 'block';
+        // 計算式の表示 (極小テキスト)
+        document.getElementById('fml-req-balls').innerText = prob + " ÷ " + naki + " × 250 = " + reqBalls.toFixed(1);
+        document.getElementById('fml-plus-balls').innerText = "(" + rb + " × 5) - " + reqBalls.toFixed(1) + " = " + plusBalls.toFixed(1);
+        document.getElementById('fml-tanka').innerText = plusBalls.toFixed(1) + " ÷ " + prob + " = " + tanka.toFixed(2);
+        document.getElementById('fml-1h-yen').innerText = tanka.toFixed(2) + " × " + speed + " × " + rate + " = " + Math.round(hourlyYen);
+        document.getElementById('fml-total').innerText = tanka.toFixed(2) + " × " + speed + " × " + time + " = " + Math.round(totalBalls) + "玉 (" + Math.round(totalYen).toLocaleString() + "円)";
     }
 
     function sumString(str) {
-        // 数字以外の文字で分割（ピリオド等）
-        const arr = str.split(/[^0-9]+/).filter(v => v !== '');
+        const arr = str.split(/[^0-9.]+/).filter(v => v !== '');
         let sum = 0;
         arr.forEach(num => { sum += parseFloat(num) || 0; });
         return sum;
@@ -230,19 +246,16 @@
     function calculateProb() {
         const sumStart = sumString(document.getElementById('calc-start').value);
         const sumHit = sumString(document.getElementById('calc-hit').value);
-
         document.getElementById('calc-sum-start').innerText = sumStart;
         document.getElementById('calc-sum-hit').innerText = sumHit;
 
         if (sumHit > 0) {
             calculatedProb = sumStart / sumHit;
-            document.getElementById('calc-final-prob').innerText = "1 / " + calculatedProb.toFixed(2);
-            document.getElementById('calc-final-prob').style.color = "#ff453a";
+            document.getElementById('calc-final-prob').innerText = calculatedProb.toFixed(2);
             document.getElementById('btn-apply').disabled = false;
         } else {
             calculatedProb = 0;
-            document.getElementById('calc-final-prob').innerText = "エラー (大当り0)";
-            document.getElementById('calc-final-prob').style.color = "#888";
+            document.getElementById('calc-final-prob').innerText = "エラー";
             document.getElementById('btn-apply').disabled = true;
         }
         document.getElementById('calc-result-box').style.display = 'block';
@@ -256,7 +269,18 @@
         }
     }
 
+    function showCalcPage() { 
+        document.getElementById('main-page').style.display = 'none'; 
+        document.getElementById('calc-page').style.display = 'block'; 
+    }
+    function hideCalcPage() { 
+        document.getElementById('calc-page').style.display = 'none'; 
+        document.getElementById('main-page').style.display = 'block'; 
+    }
+
     updateResults();
 </script>
 </body>
 </html>
+
+パチンコ攻略ツールv2.0、完成しました！GitHubの更新後にスマホでチェックしてみてください。素晴らしい戦略ライフを！
