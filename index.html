@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>期待値計算ツール V2.0</title>
+    <title>期待値計算ツール V2.1</title>
     <style>
         /* デザイン：目に優しい濃いグレーのダークモード、コンパクトな2列表示 */
         body {
@@ -78,7 +78,9 @@
             margin-top: 2px;
             font-family: monospace;
         }
-        .highlight { color: #ff453a; font-size: 1.15rem; }
+        
+        /* 動的に色を変えるためのベースクラス */
+        .highlight { font-size: 1.15rem; font-weight: bold; transition: color 0.3s; }
 
         /* 確率計算サブページ */
         #calc-page { display: none; }
@@ -220,15 +222,38 @@
         const totalBalls = tanka * speed * time;
         const totalYen = totalBalls * rate;
 
-        // 結果の表示
+        // エレメントの取得
+        const el1hYen = document.getElementById('out-1h-yen');
+        const elTotalBalls = document.getElementById('out-total-balls');
+        const elTotalYen = document.getElementById('out-total-yen');
+
+        // 結果の表示 (マイナスの場合は - が自動で付きます)
         document.getElementById('out-req-balls').innerText = reqBalls.toFixed(1) + " 玉";
         document.getElementById('out-plus-balls').innerText = plusBalls.toFixed(1) + " 玉";
         document.getElementById('out-tanka').innerText = tanka.toFixed(2) + " 玉";
-        document.getElementById('out-1h-yen').innerText = Math.round(hourlyYen).toLocaleString() + " 円";
-        document.getElementById('out-total-balls').innerText = Math.round(totalBalls).toLocaleString() + " 玉";
-        document.getElementById('out-total-yen').innerText = Math.round(totalYen).toLocaleString() + " 円";
+        el1hYen.innerText = Math.round(hourlyYen).toLocaleString() + " 円";
+        elTotalBalls.innerText = Math.round(totalBalls).toLocaleString() + " 玉";
+        elTotalYen.innerText = Math.round(totalYen).toLocaleString() + " 円";
 
-        // 計算式の表示 (極小テキスト)
+        // 動的なカラーチェンジ (プラス/マイナスで色とトーンを変える)
+        if (hourlyYen > 0) {
+            // プラスの場合：水色系
+            el1hYen.style.color = "#00e5ff"; // 明るい水色
+            elTotalBalls.style.color = "#58a6ff"; // 明るい青
+            elTotalYen.style.color = "#58a6ff"; // 明るい青
+        } else if (hourlyYen < 0) {
+            // マイナスの場合：赤・オレンジ系
+            el1hYen.style.color = "#ff453a"; // 明るい赤
+            elTotalBalls.style.color = "#ff9f0a"; // 明るいオレンジ
+            elTotalYen.style.color = "#ff9f0a"; // 明るいオレンジ
+        } else {
+            // ゼロの場合
+            el1hYen.style.color = "#fff";
+            elTotalBalls.style.color = "#fff";
+            elTotalYen.style.color = "#fff";
+        }
+
+        // 計算式の表示
         document.getElementById('fml-req-balls').innerText = prob + " ÷ " + naki + " × 250 = " + reqBalls.toFixed(1);
         document.getElementById('fml-plus-balls').innerText = "(" + rb + " × 5) - " + reqBalls.toFixed(1) + " = " + plusBalls.toFixed(1);
         document.getElementById('fml-tanka').innerText = plusBalls.toFixed(1) + " ÷ " + prob + " = " + tanka.toFixed(2);
@@ -237,7 +262,7 @@
     }
 
     function sumString(str) {
-        const arr = str.split(/[^0-9.]+/).filter(v => v !== '');
+        const arr = str.split(/[^0-9]+/).filter(v => v !== '');
         let sum = 0;
         arr.forEach(num => { sum += parseFloat(num) || 0; });
         return sum;
@@ -282,5 +307,3 @@
 </script>
 </body>
 </html>
-
-
